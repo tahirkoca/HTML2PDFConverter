@@ -1,0 +1,147 @@
+<ui:FluentWindow x:Class="ConvertHtml2Pdf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:local="clr-namespace:ConvertHtml2Pdf"
+        mc:Ignorable="d"
+        Title="HTML → PDF Dönüştürücü"
+        Height="780"
+        Width="680"
+        MinHeight="780"
+        MaxHeight="780"
+        MinWidth="680"
+        MaxWidth="680"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        WindowBackdropType="Mica"
+        ExtendsContentIntoTitleBar="True"
+        AllowDrop="True"
+        Drop="Window_Drop"
+        DragOver="Window_DragOver">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="HTML → PDF Dönüştürücü" />
+
+        <Grid Grid.Row="1" Margin="24,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- HTML kaynağı -->
+            <ui:Card Grid.Row="0" Margin="0,0,0,16" Padding="20" x:Name="HtmlSourceCard">
+                <StackPanel>
+                    <TextBlock Text="HTML kaynağı" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4" />
+                    <TextBlock Text="Dosya veya klasörü buraya sürükleyebilirsiniz"
+                              FontSize="12"
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                              Margin="0,0,0,12" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:TextBox x:Name="HtmlPathTextBox" Grid.Column="0" PlaceholderText="Dosya veya klasör yolu..." Margin="0,0,8,0" IsReadOnly="True" />
+                        <ui:Button Grid.Column="1" Content="Dosya Seç" Margin="0,0,8,0" Click="BrowseFile_Click" />
+                        <ui:Button Grid.Column="2" Content="Klasör Seç" Click="BrowseFolder_Click" />
+                    </Grid>
+                </StackPanel>
+            </ui:Card>
+
+            <!-- Çıktı klasörü -->
+            <ui:Card Grid.Row="1" Margin="0,0,0,16" Padding="20">
+                <StackPanel>
+                    <TextBlock Text="Çıktı klasörü" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,12" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:TextBox x:Name="OutputDirTextBox" Grid.Column="0" PlaceholderText="PDF dosyalarının kaydedileceği klasör..." Margin="0,0,8,0" IsReadOnly="True" />
+                        <ui:Button Grid.Column="1" Content="Klasör Seç" Click="BrowseOutputFolder_Click" />
+                    </Grid>
+                </StackPanel>
+            </ui:Card>
+
+            <!-- PDF ayarları -->
+            <ui:Card Grid.Row="2" Margin="0,0,0,16" Padding="20">
+                <StackPanel>
+                    <TextBlock Text="PDF ayarları" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,12" />
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Sayfa boyutu:" VerticalAlignment="Center" Margin="0,0,12,8" />
+                        <ComboBox x:Name="PaperFormatComboBox" Grid.Row="0" Grid.Column="1" Margin="0,0,0,8" SelectedIndex="0">
+                            <ComboBoxItem Content="A4" />
+                            <ComboBoxItem Content="Letter" />
+                            <ComboBoxItem Content="A3" />
+                            <ComboBoxItem Content="A5" />
+                            <ComboBoxItem Content="Legal" />
+                        </ComboBox>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Kenar boşluğu (cm):" VerticalAlignment="Center" Margin="0,0,12,0" />
+                        <ComboBox x:Name="MarginComboBox" Grid.Row="1" Grid.Column="1" SelectedIndex="1">
+                            <ComboBoxItem Content="0,5 cm" Tag="0.5" />
+                            <ComboBoxItem Content="1 cm" Tag="1" />
+                            <ComboBoxItem Content="1,5 cm" Tag="1.5" />
+                            <ComboBoxItem Content="2 cm" Tag="2" />
+                        </ComboBox>
+                    </Grid>
+                    <CheckBox x:Name="LandscapeCheckBox" Content="Yatay (landscape)" Margin="0,12,0,0" />
+                </StackPanel>
+            </ui:Card>
+
+            <!-- Dönüştür butonu ve ilerleme -->
+            <ui:Card Grid.Row="3" Margin="0,0,0,16" Padding="20">
+                <StackPanel>
+                    <ui:Button x:Name="ConvertButton" Content="PDF'e Dönüştür" Appearance="Primary" HorizontalAlignment="Stretch" Click="Convert_Click" Margin="0,0,0,12" />
+                    <ProgressBar x:Name="ProgressBar" Height="6" Minimum="0" Maximum="100" Value="0" Visibility="Collapsed" Margin="0,0,0,8" />
+                    <TextBlock x:Name="StatusTextBlock" Text="" FontSize="13" TextWrapping="Wrap" Visibility="Collapsed" />
+                </StackPanel>
+            </ui:Card>
+
+            <!-- Dönüştürme sonucu (kalan alanı doldurur, scroll yok) -->
+            <ui:Card Grid.Row="4" Margin="0,0,0,16" Padding="20" x:Name="ResultCard">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Dönüştürme sonucu" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8" />
+                    <ListView x:Name="ResultListView"
+                              Grid.Row="1"
+                              BorderThickness="0"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Dosya" Width="220" DisplayMemberBinding="{Binding FileName}" />
+                                <GridViewColumn Header="Durum" Width="320" DisplayMemberBinding="{Binding Message}" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+            </ui:Card>
+
+            <!-- Durum / bilgi mesajı -->
+            <ui:InfoBar Grid.Row="5" x:Name="MessageInfoBar"
+                        IsOpen="False" IsClosable="True" Title="Bilgi" Message="" Severity="Informational" />
+        </Grid>
+    </Grid>
+</ui:FluentWindow>
